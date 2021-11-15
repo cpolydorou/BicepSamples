@@ -1,4 +1,4 @@
-# BicepSamples
+# Random Name Resource Group
 Sample Bicep template that creates a resource group based on user input combined with a random GUID string based on the subscription ID.
 
 Sample Deployment Examples
