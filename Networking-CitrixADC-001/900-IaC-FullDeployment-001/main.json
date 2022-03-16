@@ -1,0 +1,346 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1318.3566",
+      "templateHash": "13418076312220508107"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "westeurope"
+    },
+    "administratorUsername": {
+      "type": "secureString"
+    },
+    "administratorPassword": {
+      "type": "secureString"
+    },
+    "vNetName": {
+      "type": "string",
+      "defaultValue": "vNet"
+    },
+    "CitrixADCName": {
+      "type": "string",
+      "defaultValue": "adc"
+    }
+  },
+  "variables": {
+    "resourceGroupNamePrefix": "RG-CitrixADC-"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2021-04-01",
+      "name": "[format('{0}Networking', variables('resourceGroupNamePrefix'))]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2021-04-01",
+      "name": "[format('{0}ADC', variables('resourceGroupNamePrefix'))]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "vNet",
+      "resourceGroup": "[format('{0}Networking', variables('resourceGroupNamePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vNetName": {
+            "value": "[parameters('vNetName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.4.1318.3566",
+              "templateHash": "12627586611207437156"
+            }
+          },
+          "parameters": {
+            "vNetName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2020-06-01",
+              "name": "[parameters('vNetName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "10.0.0.0/16"
+                  ]
+                },
+                "enableDdosProtection": false,
+                "subnets": [
+                  {
+                    "name": "Networking",
+                    "properties": {
+                      "addressPrefix": "10.0.0.0/24"
+                    }
+                  },
+                  {
+                    "name": "ADC",
+                    "properties": {
+                      "addressPrefix": "10.0.1.0/24"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "outputs": {
+            "vNetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vNetName'))]"
+            },
+            "vNetName": {
+              "type": "string",
+              "value": "[parameters('vNetName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}Networking', variables('resourceGroupNamePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "ADC",
+      "resourceGroup": "[format('{0}ADC', variables('resourceGroupNamePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "ADCName": {
+            "value": "[parameters('CitrixADCName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vNetName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', variables('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')).outputs.vNetName.value]"
+          },
+          "vNetResourceGroupName": {
+            "value": "[format('{0}Networking', variables('resourceGroupNamePrefix'))]"
+          },
+          "adcSubnetId": {
+            "value": "[format('{0}/subnets/ADC', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', variables('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')).outputs.vNetId.value)]"
+          },
+          "adcVMSize": {
+            "value": "Standard_B4ms"
+          },
+          "adminUsername": {
+            "value": "[parameters('administratorUsername')]"
+          },
+          "adminPassword": {
+            "value": "[parameters('administratorPassword')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.4.1318.3566",
+              "templateHash": "4518363524556750652"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "westeurope"
+            },
+            "vNetName": {
+              "type": "string"
+            },
+            "vNetResourceGroupName": {
+              "type": "string"
+            },
+            "ADCName": {
+              "type": "string",
+              "defaultValue": "adc"
+            },
+            "adcSubnetId": {
+              "type": "string"
+            },
+            "adcVMSize": {
+              "type": "string",
+              "defaultValue": "Standard_B4ms"
+            },
+            "adminUsername": {
+              "type": "string",
+              "defaultValue": "localadmin"
+            },
+            "adminPassword": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2020-08-01",
+              "name": "[format('{0}-pip', parameters('ADCName'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static"
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}-nsg', parameters('ADCName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "SSH",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "22",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1010,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  },
+                  {
+                    "name": "HTTPS",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1020,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2021-02-01",
+              "name": "[format('{0}-nic', parameters('ADCName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "subnet": {
+                        "id": "[parameters('adcSubnetId')]"
+                      },
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('ADCName')))]"
+                      }
+                    }
+                  }
+                ],
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}-nsg', parameters('ADCName')))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}-nsg', parameters('ADCName')))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('ADCName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2021-03-01",
+              "name": "[parameters('ADCName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('adcVMSize')]"
+                },
+                "osProfile": {
+                  "computerName": "[parameters('ADCName')]",
+                  "adminUsername": "[parameters('adminUsername')]",
+                  "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "citrix",
+                    "offer": "netscalervpx-131",
+                    "sku": "netscalerbyol",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "createOption": "FromImage",
+                    "managedDisk": {
+                      "storageAccountType": "StandardSSD_LRS"
+                    }
+                  }
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('ADCName')))]"
+                    }
+                  ]
+                }
+              },
+              "plan": {
+                "name": "netscalerbyol",
+                "publisher": "citrix",
+                "product": "netscalervpx-131"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('ADCName')))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}ADC', variables('resourceGroupNamePrefix')))]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}Networking', variables('resourceGroupNamePrefix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', variables('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')]"
+      ]
+    }
+  ]
+}
