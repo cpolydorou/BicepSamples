@@ -17,10 +17,10 @@ param administratorPassword string
 // Resource names
 param vNetName string = 'vNet'
 param CitrixADCName string = 'adc'
+param resourceGroupNamePrefix string = 'RG-CitrixADC-'
 // ---------- End - Parameters ---------------
 
 // ---------- Start - Variables --------------
-var resourceGroupNamePrefix = 'RG-CitrixADC-'
 // ---------- End - Variables ----------------
 
 // ---------- Start - ResourceGroups ---------

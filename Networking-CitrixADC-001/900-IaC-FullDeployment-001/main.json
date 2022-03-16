@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.4.1318.3566",
-      "templateHash": "13418076312220508107"
+      "templateHash": "939876645247850111"
     }
   },
   "parameters": {
@@ -26,29 +26,30 @@
     "CitrixADCName": {
       "type": "string",
       "defaultValue": "adc"
+    },
+    "resourceGroupNamePrefix": {
+      "type": "string",
+      "defaultValue": "RG-CitrixADC-"
     }
-  },
-  "variables": {
-    "resourceGroupNamePrefix": "RG-CitrixADC-"
   },
   "resources": [
     {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2021-04-01",
-      "name": "[format('{0}Networking', variables('resourceGroupNamePrefix'))]",
+      "name": "[format('{0}Networking', parameters('resourceGroupNamePrefix'))]",
       "location": "[parameters('location')]"
     },
     {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2021-04-01",
-      "name": "[format('{0}ADC', variables('resourceGroupNamePrefix'))]",
+      "name": "[format('{0}ADC', parameters('resourceGroupNamePrefix'))]",
       "location": "[parameters('location')]"
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "name": "vNet",
-      "resourceGroup": "[format('{0}Networking', variables('resourceGroupNamePrefix'))]",
+      "resourceGroup": "[format('{0}Networking', parameters('resourceGroupNamePrefix'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -123,14 +124,14 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}Networking', variables('resourceGroupNamePrefix')))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}Networking', parameters('resourceGroupNamePrefix')))]"
       ]
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "name": "ADC",
-      "resourceGroup": "[format('{0}ADC', variables('resourceGroupNamePrefix'))]",
+      "resourceGroup": "[format('{0}ADC', parameters('resourceGroupNamePrefix'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -144,13 +145,13 @@
             "value": "[parameters('location')]"
           },
           "vNetName": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', variables('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')).outputs.vNetName.value]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', parameters('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')).outputs.vNetName.value]"
           },
           "vNetResourceGroupName": {
-            "value": "[format('{0}Networking', variables('resourceGroupNamePrefix'))]"
+            "value": "[format('{0}Networking', parameters('resourceGroupNamePrefix'))]"
           },
           "adcSubnetId": {
-            "value": "[format('{0}/subnets/ADC', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', variables('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')).outputs.vNetId.value)]"
+            "value": "[format('{0}/subnets/ADC', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', parameters('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')).outputs.vNetId.value)]"
           },
           "adcVMSize": {
             "value": "Standard_B4ms"
@@ -337,9 +338,9 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}ADC', variables('resourceGroupNamePrefix')))]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}Networking', variables('resourceGroupNamePrefix')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', variables('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}ADC', parameters('resourceGroupNamePrefix')))]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}Networking', parameters('resourceGroupNamePrefix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}Networking', parameters('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'vNet')]"
       ]
     }
   ]
