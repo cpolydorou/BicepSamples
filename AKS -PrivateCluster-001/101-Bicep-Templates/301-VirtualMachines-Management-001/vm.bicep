@@ -80,9 +80,9 @@ resource tools 'Microsoft.Compute/virtualMachines/extensions@2020-06-01' = {
     settings: {
       skipDos2Unix: false
       fileUris: [
-        'https://cpolydorouuni.blob.core.windows.net/scripts/kubectl-install.sh'
-        'https://cpolydorouuni.blob.core.windows.net/scripts/azurecli-install.sh'
-        'https://cpolydorouuni.blob.core.windows.net/scripts/helm-install.sh'
+        'https://raw.githubusercontent.com/cpolydorou/BicepSamples/main/AKS%20-PrivateCluster-001/101-Bicep-Templates/301-VirtualMachines-Management-001/101-ConfigurationScripts/111-Kubectl/kubectl-install.sh'
+        'https://raw.githubusercontent.com/cpolydorou/BicepSamples/main/AKS%20-PrivateCluster-001/101-Bicep-Templates/301-VirtualMachines-Management-001/101-ConfigurationScripts/101-Azure/azurecli-install.sh'
+        'https://raw.githubusercontent.com/cpolydorou/BicepSamples/main/AKS%20-PrivateCluster-001/101-Bicep-Templates/301-VirtualMachines-Management-001/101-ConfigurationScripts/121-Helm/helm-install.sh'
       ]
     }
     protectedSettings: {
