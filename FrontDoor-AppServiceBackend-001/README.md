@@ -17,4 +17,4 @@ I've posted a post on the details of the deployment, available [here](https://bl
 ![Build Status](https://vsrm.dev.azure.com/christospolydorou/_apis/public/Release/badge/a8001c7b-70d1-4fd4-b4b5-ab1a8bbbc570/6/6)
 
 ## Deploy to Azure
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://raw.githubusercontent.com/cpolydorou/BicepSamples/main/FrontDoor-AppServiceBackend-001/101-Bicep-Templates/900-IaC-FullDeployment-001/main.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcpolydorou%2FBicepSamples%2Fmain%2FFrontDoor-AppServiceBackend-001%2F101-Bicep-Templates%2F900-IaC-FullDeployment-001%2Fmain.json)
