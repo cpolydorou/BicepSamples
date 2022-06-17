@@ -12,3 +12,7 @@ To deploy the environment follow the below steps:
 
 ## Blog
 I've posted a post on the details of the deployment, available [here](https://blog.cpolydorou.net/2022/06/protecting-appservice-using-front-door.html).
+
+
+## Deployment Status
+![Build Status](https://vsrm.dev.azure.com/christospolydorou/_apis/public/Release/badge/a8001c7b-70d1-4fd4-b4b5-ab1a8bbbc570/6/6)
