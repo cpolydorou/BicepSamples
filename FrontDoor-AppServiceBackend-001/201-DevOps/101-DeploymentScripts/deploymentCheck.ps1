@@ -10,7 +10,7 @@ param (
 )
 
 # The number of seconds to wait in total
-$totalSeconds = 20
+$totalSeconds = 300
 
 # The intervale between tries
 $interval = 10
