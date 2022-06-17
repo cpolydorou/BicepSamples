@@ -1,0 +1,313 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.7.4.23292",
+      "templateHash": "11359179919036900248"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "westeurope"
+    },
+    "appName": {
+      "type": "string",
+      "defaultValue": "app"
+    },
+    "resourceGroupNamePrefix": {
+      "type": "string",
+      "defaultValue": "RG-FD-AppService-"
+    }
+  },
+  "variables": {
+    "appNameFinal": "[format('{0}-{1}', parameters('appName'), uniqueString(subscription().id))]",
+    "frontDoorNameFinal": "[format('fd-{0}-{1}', parameters('appName'), uniqueString(subscription().id))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2021-04-01",
+      "name": "[format('{0}FrontDoor', parameters('resourceGroupNamePrefix'))]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2021-04-01",
+      "name": "[format('{0}AppService', parameters('resourceGroupNamePrefix'))]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "AppService",
+      "resourceGroup": "[format('{0}AppService', parameters('resourceGroupNamePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "webAppName": {
+            "value": "[variables('appNameFinal')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "17773300412926507119"
+            }
+          },
+          "parameters": {
+            "webAppName": {
+              "type": "string",
+              "defaultValue": "app"
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "F1"
+            },
+            "linuxFxVersion": {
+              "type": "string",
+              "defaultValue": "DOCKER|cpolydorou/requestinformation:latest"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            }
+          },
+          "variables": {
+            "appServicePlanName": "[toLower(format('AppServicePlan-{0}', parameters('webAppName')))]",
+            "webSiteName": "[toLower(parameters('webAppName'))]",
+            "dockerRegistryUrl": "https://index.docker.io"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2020-06-01",
+              "name": "[variables('appServicePlanName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "reserved": true
+              },
+              "sku": {
+                "name": "[parameters('sku')]"
+              },
+              "kind": "linux"
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2020-06-01",
+              "name": "[variables('webSiteName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
+                "siteConfig": {
+                  "linuxFxVersion": "[parameters('linuxFxVersion')]",
+                  "appSettings": [
+                    {
+                      "name": "DOCKER_REGISTRY_SERVER_URL",
+                      "value": "[variables('dockerRegistryUrl')]"
+                    },
+                    {
+                      "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                      "value": ""
+                    },
+                    {
+                      "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                      "value": null
+                    },
+                    {
+                      "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                      "value": "false"
+                    },
+                    {
+                      "name": "PORT",
+                      "value": "8080"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "webAppURL": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Web/sites', variables('webSiteName'))).defaultHostName]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}AppService', parameters('resourceGroupNamePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "FrontDoor",
+      "resourceGroup": "[format('{0}FrontDoor', parameters('resourceGroupNamePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "frontDoorName": {
+            "value": "[variables('frontDoorNameFinal')]"
+          },
+          "frontDoorEndpointName": {
+            "value": "[parameters('appName')]"
+          },
+          "webappURL": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}AppService', parameters('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'AppService')).outputs.webAppURL.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "17888477762923134179"
+            }
+          },
+          "parameters": {
+            "frontDoorName": {
+              "type": "string"
+            },
+            "frontDoorEndpointName": {
+              "type": "string"
+            },
+            "webappURL": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/frontDoors",
+              "apiVersion": "2020-05-01",
+              "name": "[parameters('frontDoorName')]",
+              "location": "global",
+              "properties": {
+                "routingRules": [
+                  {
+                    "name": "http",
+                    "properties": {
+                      "frontendEndpoints": [
+                        {
+                          "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints', parameters('frontDoorName'), parameters('frontDoorEndpointName'))]"
+                        }
+                      ],
+                      "acceptedProtocols": [
+                        "Http",
+                        "Https"
+                      ],
+                      "patternsToMatch": [
+                        "/*"
+                      ],
+                      "routeConfiguration": {
+                        "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                        "backendPool": {
+                          "id": "[resourceId('Microsoft.Network/frontDoors/backendPools', parameters('frontDoorName'), 'appServiceBackendPool')]"
+                        },
+                        "forwardingProtocol": "HttpOnly"
+                      },
+                      "enabledState": "Enabled"
+                    }
+                  }
+                ],
+                "healthProbeSettings": [
+                  {
+                    "name": "healthProbeSettings1",
+                    "properties": {
+                      "path": "/",
+                      "protocol": "Http",
+                      "intervalInSeconds": 30
+                    }
+                  }
+                ],
+                "loadBalancingSettings": [
+                  {
+                    "name": "loadBalancingSettings1",
+                    "properties": {
+                      "sampleSize": 4,
+                      "successfulSamplesRequired": 2
+                    }
+                  }
+                ],
+                "backendPools": [
+                  {
+                    "name": "appServiceBackendPool",
+                    "properties": {
+                      "backends": [
+                        {
+                          "address": "[parameters('webappURL')]",
+                          "backendHostHeader": "[parameters('webappURL')]",
+                          "httpPort": 80,
+                          "httpsPort": 443,
+                          "weight": 50,
+                          "priority": 1,
+                          "enabledState": "Enabled"
+                        }
+                      ],
+                      "loadBalancingSettings": {
+                        "id": "[resourceId('Microsoft.Network/frontDoors/loadBalancingSettings', parameters('frontDoorName'), 'loadBalancingSettings1')]"
+                      },
+                      "healthProbeSettings": {
+                        "id": "[resourceId('Microsoft.Network/frontDoors/healthProbeSettings', parameters('frontDoorName'), 'healthProbeSettings1')]"
+                      }
+                    }
+                  }
+                ],
+                "frontendEndpoints": [
+                  {
+                    "name": "[parameters('frontDoorEndpointName')]",
+                    "properties": {
+                      "hostName": "[format('{0}.azurefd.net', parameters('frontDoorName'))]",
+                      "sessionAffinityEnabledState": "Disabled"
+                    }
+                  }
+                ],
+                "enabledState": "Enabled"
+              }
+            }
+          ],
+          "outputs": {
+            "frontDoorURL": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/frontDoors', parameters('frontDoorName'))).cname]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}AppService', parameters('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'AppService')]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}FrontDoor', parameters('resourceGroupNamePrefix')))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "appServiceURL": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}AppService', parameters('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'AppService')).outputs.webAppURL.value]"
+    },
+    "frontDoorURL": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}FrontDoor', parameters('resourceGroupNamePrefix'))), 'Microsoft.Resources/deployments', 'FrontDoor')).outputs.frontDoorURL.value]"
+    }
+  }
+}
