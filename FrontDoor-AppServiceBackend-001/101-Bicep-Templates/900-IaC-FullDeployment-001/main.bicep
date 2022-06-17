@@ -52,7 +52,7 @@ module app '../101-AppService-001/appService.bicep' = {
 }
 
 // Deploy the Front Door
-module vNet '../201-FrontDoor-001/frontDoor.bicep' = {
+module fd '../201-FrontDoor-001/frontDoor.bicep' = {
   name: 'FrontDoor'
   scope: rgfd
   params: {
@@ -63,3 +63,8 @@ module vNet '../201-FrontDoor-001/frontDoor.bicep' = {
 }
 
 // ---------- End - Modules -----------
+
+// ---------- Start - Outputs -------------
+output appServiceURL string = app.outputs.webAppURL
+output frontDoorURL string = fd.outputs.frontDoorURL
+// ---------- End - Outputs   -------------

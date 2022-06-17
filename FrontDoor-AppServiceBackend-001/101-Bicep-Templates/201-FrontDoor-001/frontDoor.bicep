@@ -94,3 +94,7 @@ resource frontdoor 'Microsoft.Network/frontDoors@2020-05-01' = {
   }
 }
 // ---------- End - Resources   ------------
+
+// ---------- Start - Outputs -------------
+output frontDoorURL string = frontdoor.properties.cname
+// ---------- End - Outputs   -------------
